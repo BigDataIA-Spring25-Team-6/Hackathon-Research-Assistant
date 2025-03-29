@@ -1,0 +1,10 @@
+langgraph
+langchain
+e2b
+mcp-sdk
+snowflake-connector-python
+openai
+streamlit
+fastapi
+uvicorn
+pydantic
