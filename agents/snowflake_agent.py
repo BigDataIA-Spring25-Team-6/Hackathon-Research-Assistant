@@ -2,60 +2,75 @@ import os
 import json
 import re
 import pandas as pd
-from openai import OpenAI
+from langchain_community.chat_models import ChatOllama
+from langchain_core.messages import HumanMessage, SystemMessage
 from e2b_code_interpreter import Sandbox
 from dotenv import load_dotenv
 from utils.snowflake_connector import get_snowflake_connection
 
 load_dotenv()
 
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+llm = ChatOllama(model="llama3", temperature=0)
 TABLE_NAME = "ON_SITE_SEARCH"
 
 def extract_json_block(text: str) -> str:
     """
-    Extract the first JSON object from a markdown code block or fallback to first JSON object.
+    Try to extract a JSON object from the response, even if malformed.
     """
     print("\n[DEBUG] Raw GPT Output:\n", text)
 
-    # Proper raw string pattern — note the r prefix
+    # Try direct parse
+    try:
+        return json.dumps(json.loads(text.strip()))
+    except Exception as e:
+        print("[DEBUG] Direct JSON parsing failed:", e)
+
+    # Try code block
     match = re.search(r"```json\s*({.*?})\s*```", text, re.DOTALL)
     if match:
         return match.group(1).strip()
 
-    # Fallback: match any top-level {...}
+    # Try fallback {...}
     match = re.search(r"({.*})", text, re.DOTALL)
     if match:
-        return match.group(1).strip()
+        try:
+            return json.dumps(json.loads(match.group(1).strip()))
+        except:
+            pass
+
+    # Manual patch: append closing brace if missing
+    if text.strip().startswith("{") and not text.strip().endswith("}"):
+        try:
+            patched = text.strip() + "}"
+            return json.dumps(json.loads(patched))
+        except:
+            pass
 
     raise ValueError("No valid JSON object found in the response.")
-
 
 def generate_sql(query: str, platform: str, date_start: str = None, date_end: str = None) -> dict:
     system_prompt = f"""
 You are a Snowflake SQL expert.
-Generate a SQL query that can be run on the table `{TABLE_NAME}`.
-Only use these columns: DATE, OSS_KEYWORD, SITE_RULE, CALIBRATED_VISITS, CALIBRATED_USERS, COUNTRY.
 
-ALWAYS filter to:
+Your task is to ONLY return a JSON object containing two fields:
+- "sql": A valid Snowflake SQL query using the `{TABLE_NAME}` table
+- "explanation": A concise explanation of the query
+
+Use only the following columns: DATE, OSS_KEYWORD, SITE_RULE, CALIBRATED_VISITS, CALIBRATED_USERS, COUNTRY.
+
+ALWAYS apply these filters in the WHERE clause:
 - COUNTRY = 840
 - SITE_RULE ILIKE '%{platform}%'
-- DATE between '{date_start}' and '{date_end}'
+- DATE BETWEEN '{date_start}' AND '{date_end}'
 
-Return raw JSON with:
-- "sql": SQL query
-- "explanation": explanation of the query
+NEVER include explanations outside the JSON. Do not use code blocks or markdown.
+Only return raw JSON.
 """
-    messages = [
-        {"role": "system", "content": system_prompt},
-        {"role": "user", "content": query}
-    ]
-    response = client.chat.completions.create(
-        model="gpt-4o",
-        messages=messages,
-        temperature=0
-    )
-    content = response.choices[0].message.content.strip()
+    response = llm.invoke([
+    SystemMessage(content=system_prompt),
+    HumanMessage(content=query)
+    ])
+    content = response.content.strip()
     json_text = extract_json_block(content)
     return json.loads(json_text)
 
@@ -80,16 +95,12 @@ create an insightful chart based on the user's request, and save the chart as 'c
 Ensure the chart has a clear title, axis labels, and tight layout.
 Only return the code. Do not include explanations or comments.
 """
+    response = llm.invoke([
+    SystemMessage(content=prompt),
+    HumanMessage(content=query)
+])
 
-    response = client.chat.completions.create(
-        model="gpt-4o",
-        messages=[
-            {"role": "system", "content": prompt}
-        ],
-        temperature=0
-    )
-
-    code_block = response.choices[0].message.content.strip()
+    code_block = response.content.strip()
 
     if code_block.startswith("```python"):
         code_block = code_block.replace("```python", "").replace("```", "").strip()

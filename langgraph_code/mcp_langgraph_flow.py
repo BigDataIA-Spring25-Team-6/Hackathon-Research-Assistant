@@ -1,6 +1,7 @@
 from langgraph.graph import StateGraph, END
 from langchain_core.agents import AgentAction
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain_community.chat_models import ChatOllama
 from langchain_openai import ChatOpenAI
 from mcp.client import MCPClient
 import operator
@@ -16,7 +17,8 @@ class AgentState(TypedDict):
 mcp = MCPClient("http://localhost:8000")
 
 # Step 3: Create OpenAI Agent that uses MCP tools
-llm = ChatOpenAI(model="gpt-4o", temperature=0)
+# llm = ChatOpenAI(model="gpt-4o", temperature=0)
+llm = ChatOllama(model="llama3", temperature=0)
 
 system_prompt = """
 You are a research assistant with access to external tools. 
