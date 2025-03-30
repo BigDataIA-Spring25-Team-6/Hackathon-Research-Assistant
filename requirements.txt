@@ -1,7 +1,6 @@
 langgraph
-langchain
-e2b
-mcp-sdk
+e2b-code-interpreter
+mcp
 snowflake-connector-python
 openai
 streamlit
