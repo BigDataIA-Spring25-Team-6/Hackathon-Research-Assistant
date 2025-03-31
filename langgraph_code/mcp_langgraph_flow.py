@@ -79,9 +79,9 @@ def build_graph():
 
     graph.add_node("oracle", run_oracle)
     graph.add_node("snowflake_tool", run_tool)
-    # graph.add_node("web_search_tool", run_tool)
+    graph.add_node("web_search_tool", run_tool)
     # graph.add_node("rag_tool", run_tool)
-    # graph.add_node("final_answer", run_tool)
+    graph.add_node("final_answer", run_tool)
 
     graph.set_entry_point("oracle")
     graph.add_conditional_edges("oracle", router)
