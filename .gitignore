@@ -29,3 +29,6 @@ debug.log
 # AWS Credentials & Secrets
 .env
 .aws/
+
+test.py
+test2.py
