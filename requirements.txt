@@ -1,0 +1,14 @@
+langgraph
+e2b-code-interpreter
+mcp
+snowflake-connector-python
+openai
+streamlit
+fastapi
+uvicorn
+pydantic
+mistralai
+tavily-python
+beautifulsoup4
+requests
+python-dotenv
