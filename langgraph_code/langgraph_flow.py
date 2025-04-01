@@ -179,7 +179,6 @@ graph.add_node("snowflake_tool", run_tool)
 graph.add_node("web_search_tool", run_tool)
 graph.add_node("image_generator_tool", run_tool)
 graph.add_node("final_report_tool", run_tool)
-graph.add_node("refine_report_tool", run_tool)
 
 graph.set_entry_point("oracle")
 
@@ -196,4 +195,4 @@ for tool_obj in tools:
 # if anything goes to final answer, it must then move to END
 graph.add_edge("final_report_tool", END)
 
-# runnable = graph.compile()
+runnable = graph.compile()
