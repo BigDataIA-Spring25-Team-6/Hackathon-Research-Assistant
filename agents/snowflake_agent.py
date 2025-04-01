@@ -34,17 +34,25 @@ def extract_json_block(text: str) -> str:
 def generate_sql(query: str, platform: str, date_start: str = None, date_end: str = None) -> dict:
     system_prompt = f"""
 You are a Snowflake SQL expert.
-Generate a SQL query that can be run on the table `{TABLE_NAME}`.
-Only use these columns: DATE, OSS_KEYWORD, SITE_RULE, CALIBRATED_VISITS, CALIBRATED_USERS, COUNTRY.
+Generate a SQL query that runs on the table `{TABLE_NAME}` with these columns:
+- DATE
+- OSS_KEYWORD
+- SITE_RULE
+- CALIBRATED_VISITS
+- CALIBRATED_USERS
+- COUNTRY
 
-ALWAYS filter to:
-- COUNTRY = 840
+Rules:
+- ALWAYS filter: COUNTRY = 840
 - SITE_RULE ILIKE '%{platform}%'
-- DATE between '{date_start}' and '{date_end}'
+- DATE BETWEEN '{date_start}' AND '{date_end}'
 
-Return raw JSON with:
-- "sql": SQL query
-- "explanation": explanation of the query
+If using GROUP BY, only include **aggregated columns** (e.g. `SUM(CALIBRATED_VISITS)`) and **columns in the GROUP BY clause**.
+NEVER select raw columns like `DATE` or `SITE_RULE` unless they are grouped or aggregated.
+
+Output JSON in the format:
+- "sql": full query
+- "explanation": what it does
 """
     messages = [
         {"role": "system", "content": system_prompt},
