@@ -1,4 +1,4 @@
-# Product Demand Analysis with an Agentic Multi-Agent System with LangGraph
+# Agentic RAG with LangGraph for Product Demand Analysis
 
 ## Team Members
 - **Aditi Ashutosh Deodhar**  002279575  
