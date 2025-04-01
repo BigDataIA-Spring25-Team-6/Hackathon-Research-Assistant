@@ -3,7 +3,7 @@ import requests
 import base64
 from io import BytesIO
 
-st.set_page_config(page_title="NVIDIA Research Assistant", layout="centered")
+st.set_page_config(page_title="Research Assistant", layout="centered")
 st.title("🧾 Team 6 Research Topic : Product Demand Analysis")
 
 # --- Tool Description ---
@@ -18,16 +18,15 @@ st.markdown(
     - Which products are gaining or losing popularity.  
 
     Powered by a **multi-agent architecture**, this assistant combines **data retrieval**, **external research**, and **automated analysis** into one cohesive, interactive tool.  
-    Start by asking your financial research question below!
 
     
     """
 )
 
-backend_base_url = "https://localhost:8000"
+backend_base_url = "http://localhost:8000"
 
 # --- Query Input ---
-query = st.text_input("Ask your financial research question...")
+query = st.text_input("Ask your research question below...")
 
 # Placeholder for displaying the response
 response_placeholder = st.empty()
